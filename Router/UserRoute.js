@@ -2,6 +2,8 @@ const express = require('express')
 const userRouter = express.Router()
 const {userModel} = require('../db')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+const jwt_secret = "usersecret60224"
 
 
 userRouter.post("/signup",async (req,res)=>{
@@ -22,9 +24,12 @@ userRouter.post("/signup",async (req,res)=>{
     })
 })
 
-userRouter.post("/signin",(req,res)=>{
+userRouter.post("/signin", async (req,res)=>{
+    const {email , password} = req.body;
+
+    const decodedPassword = await bcrypt.compare()
     res.json({
-        message: " signin endpoint here"
+        message: "You are signed in"
     })
 })
 userRouter.get("/purchases",(req,res)=>{
