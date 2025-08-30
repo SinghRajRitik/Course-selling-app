@@ -1,32 +1,32 @@
 const express = require('express')
 const adminRouter = express.Router()
-const { adminModel, userModel } = require('../db')
+const { adminModel } = require('../db')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const jwt_secret = "adminsecret2022"
+const { admin_jwt_secret } = require("../config")
+const adminMiddleware = require('../middleware/admin')
 
 
-adminRouter.post("/signup", async (req, res) => {
+    adminRouter.post("/signup", async (req, res) => {
 
-    const { email, password, fname, lname, mobile } = req.body;
+        const { email, password, fname, lname, mobile } = req.body;
 
-    const hashedPassword = await bcrypt.hash(password, 5)
+        const hashedPassword = await bcrypt.hash(password, 5)
 
-    await adminModel.create({
-        email: email,
-        password: hashedPassword,
-        fname: fname,
-        lname: lname,
-        phoneNo: mobile
+        await adminModel.create({
+            email: email,
+            password: hashedPassword,
+            fname: fname,
+            lname: lname,
+            phoneNo: mobile
+        })
+        res.json({
+            message: "you are successfully signup."
+        })
     })
-    res.json({
-        message: "you are successfully signup."
-    })
-})
 
 adminRouter.post("/signin", async (req, res) => {
     try {
-
         const { email, password } = req.body;
 
         const user = await adminModel.findOne({
@@ -45,33 +45,46 @@ adminRouter.post("/signin", async (req, res) => {
         }
         const token = jwt.sign({
             id: user._id
-        }, jwt_secret)
+        }, admin_jwt_secret)
 
         res.json({
             message: "you are sign in",
             token: token
 
         })
-        } catch (error) {
-            console.log(error)
-            res.status(500).json({
-                message : "Internal server Error"
-            })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            message: "Internal server Error"
+        })
 
     }
 
 })
 
-adminRouter.post('/create', (req, res) => {
+adminRouter.post('/create', adminMiddleware, async(req, res) => {
+    const adminId = req.adminId
+
+     const {title , description , price ,imgurl , createrId} = req.body
+
+     await adminModel.create({
+            title,
+            description,
+            price,
+            imgurl,
+            createrId : adminId
+     })
     res.json({
-        message: "create course end point"
+        message: "Course Added to preview."
     })
 })
+
 adminRouter.delete("/delete-course", (req, res) => {
     res.json({
         message: "delete course route"
     })
 })
+
 adminRouter.patch("/update", (req, res) => {
     res.json({
         message: "update course route"

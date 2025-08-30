@@ -1,40 +1,70 @@
 const express = require('express')
 const userRouter = express.Router()
-const {userModel} = require('../db')
+const { userModel } = require('../db')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const jwt_secret = "usersecret60224"
+const {user_jwt_secret} = require("../config")
+const userMiddleware = require('../middleware/user')
 
 
-userRouter.post("/signup",async (req,res)=>{
-    const { email , password , fname , lname , mobile } = req.body;
+userRouter.post("/signup", async (req, res) => {
+    const { email, password, fname, lname, mobile } = req.body;
 
-    const hashedPassword = await bcrypt.hash(password,5)
+    const hashedPassword = await bcrypt.hash(password, 5)
 
     await userModel.create({
-        email : email,
-        password : hashedPassword,
-        fname : fname,
-        lname : lname,
+        email: email,
+        password: hashedPassword,
+        fname: fname,
+        lname: lname,
         phoneNo: mobile
     })
 
     res.json({
-        message : "Your are Successfully SignUp"
+        message: "Your are Successfully SignUp"
     })
 })
 
-userRouter.post("/signin", async (req,res)=>{
-    const {email , password} = req.body;
+userRouter.post("/signin", async (req, res) => {
+    try {
+        const { email, password } = req.body;
 
-    const decodedPassword = await bcrypt.compare()
-    res.json({
-        message: "You are signed in"
-    })
+        const user = await userModel.findOne({
+            email: email
+        })
+
+        if (!user) {
+            return res.json({
+                message: "user doesn't exist." })           
+        }
+
+        const decodePassword = await bcrypt.compare(password, user.password)
+
+        if (!decodePassword) {
+            return res.json({
+                message: "Invalid Credentials." })
+        }
+
+        const token = jwt.sign({
+            id: user._id
+        }, user_jwt_secret)
+
+        res.json({
+            message: "you are signin.",
+            token: token
+        })
+
+    } catch (error) {
+        console.error(err => console.error())
+
+    }
 })
-userRouter.get("/purchases",(req,res)=>{
+
+
+userRouter.get("/purchases",userMiddleware, (req, res) => {
+    
     res.json({
-        message:"user purchase end point here"
+        message: "user purchase end point here"
     })
 })
 
