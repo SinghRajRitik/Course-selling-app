@@ -3,7 +3,6 @@ const adminRouter = express.Router()
 const { adminModel, courseModel } = require('../db')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { admin_jwt_secret } = require("../config")
 const adminMiddleware = require('../middleware/admin')
 
 
@@ -45,7 +44,7 @@ adminRouter.post("/signin", async (req, res) => {
         }
         const token = jwt.sign({
             id: user._id
-        }, admin_jwt_secret)
+        }, process.env.ADMIN_JWT_SECRET)
 
         res.json({
             message: "you are sign in",

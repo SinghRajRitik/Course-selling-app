@@ -3,7 +3,6 @@ const userRouter = express.Router()
 const { userModel } = require('../db')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const {user_jwt_secret} = require("../config")
 const userMiddleware = require('../middleware/user')
 
 
@@ -47,7 +46,7 @@ userRouter.post("/signin", async (req, res) => {
 
         const token = jwt.sign({
             id: user._id
-        }, user_jwt_secret)
+        }, process.env.USER_JWT_SECRET)
 
         res.json({
             message: "you are signin.",
