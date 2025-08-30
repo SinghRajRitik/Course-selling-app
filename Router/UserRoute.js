@@ -1,6 +1,6 @@
 const express = require('express')
 const userRouter = express.Router()
-const { userModel } = require('../db')
+const { userModel, courseModel, purchaseModel } = require('../db')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const userMiddleware = require('../middleware/user')
@@ -60,10 +60,24 @@ userRouter.post("/signin", async (req, res) => {
 })
 
 
-userRouter.get("/purchases",userMiddleware, (req, res) => {
-    
+userRouter.get("/purchases",userMiddleware, async (req, res) => {
+        const userId = req.userId
+
+        const purchase = await purchaseModel.find({
+            userId
+        })
+      let purchasedCourseId = []
+      for(let i = 0;i <purchase.length;i++){
+        purchasedCourseId.push(purchase[i].courseId)
+      }
+
+        const courses = await courseModel.find({
+        _id : {$in : purchasedCourseId}
+
+        })
     res.json({
-        message: "user purchase end point here"
+        message: "user purchase end point here",
+        courses : courses
     })
 })
 

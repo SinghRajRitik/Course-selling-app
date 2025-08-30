@@ -1,5 +1,6 @@
 const express = require('express')
-const { courseModel } = require('../db')
+const { courseModel, purchaseModel } = require('../db')
+const userMiddleware = require('../middleware/user')
 const courseRouter = express.Router()
 
 
@@ -11,10 +12,17 @@ courseRouter.get("/preview", async (req, res) => {
     })
 })
 
-courseRouter.get("/purchased", (req, res) => {
+courseRouter.post("/purchase",userMiddleware, async (req, res) => {
+    const userId = req.userId
+    const courseId = req.body.courseId;
+    const purchase = await purchaseModel.create({
+        courseId : courseId,
+        userId : userId
+    })
 
     res.json({
-        message: "purchased courses here"
+        message: "purchased courses here",
+        purchase
     })
 })
 

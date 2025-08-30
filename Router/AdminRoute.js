@@ -92,12 +92,14 @@ adminRouter.delete("/delete-course",adminMiddleware, async (req, res) => {
     const adminId  = req.adminId
     const courseId = req.body.courseId
 
-    const deletedCourse = await courseModel.find({
-        createrId : adminId,
+    const deletedCourse = await courseModel.deleteOne({
+        _id : courseId,
+        createrId : adminId
     })
 
     res.json({
-        message: "Course deleted Successfully"
+        message: "Course deleted Successfully",
+        status : deletedCourse.acknowledged
     })
 })
 
